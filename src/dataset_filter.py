@@ -20,5 +20,3 @@ def sample_dataset(inname, outname):
     new_ds.to_csv(outname)
 
     return new_ds
-
-fadsfads

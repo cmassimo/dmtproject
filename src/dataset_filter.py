@@ -54,6 +54,17 @@ def norm_pcid(dset, key):
         apply(lambda x: (x - x.mean()) / x.std())
     return res
 
+def log_norm_srch_id(dataset, key):
+    ''' dataset = pandas datafram
+        key = index of variable to be normalized (string)
+        Returns normalized log of column by srch_id.
+    '''
+    nlog = dataset[key].apply(lambda x: log(x+1))
+    #normalize by each srch_id
+    nlog = dataset[key].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
+    
+    return nlog
+
 #ds['norm_star_rating'] = norm_star_rating(ds)
 #
 #ds[['norm_star_rating', '']].corr()

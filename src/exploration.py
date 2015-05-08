@@ -6,13 +6,13 @@ import sys
 import pylab
 from math import log
 
-from dataset_filter import sample_dataset
+from dataset_filter import *
 
 #load the entire dataset
 #ds = pd.read_csv('training_set_VU_DM_2014.csv')
 
 #load a smaller dataset
-ds = sample_dataset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), os.path.join('..', 'data' , 'unbalanced_small_dataset.csv'))
+ds = oversampled_dataset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), os.path.join('..', 'data' , 'oversampled_small_dataset.csv'))
 
 def STATAclean(ds):
     STATAds = ds
@@ -71,17 +71,6 @@ pylab.savefig(os.path.join('..', 'figures', 'price_boxplot.png'), bbox_inches='t
 
 #correlations
 ds[ds['booking_bool'] == 1][['visitor_hist_adr_usd', 'prop_log_historical_price']].corr()
-
-def log_norm_srch_id(dataset, key):
-    ''' dataset = pandas datafram
-        key = index of variable to be normalized (string)
-        Returns normalized log of column by srch_id.
-    '''
-    nlog = dataset[key].apply(lambda x: log(x+1))
-    #normalize by each srch_id
-    nlog = dataset[key].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
-    
-    return nlog
 
 ds['nlog_price'] = log_norm_srch_id(ds, 'price_usd')
 ds['nlog_price'].plot(kind='hist', bins=25)

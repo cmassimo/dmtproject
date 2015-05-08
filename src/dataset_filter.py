@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 
+# DEPRECATED
 def sample_dataset(inname, outname):
+    print('DEPRECATED FUNCTION: use "oversampled_dataset(inname, outname, save_csv =True)" instead.')
+    return None
+
     #Opening the datafile
     ds = pd.read_csv(inname)
 
@@ -17,6 +21,41 @@ def sample_dataset(inname, outname):
     new_ds = ds[ds['srch_id'].isin(smpl)]
 
     # save it to csv
-    new_ds.to_csv(outname)
+    if (save_csv):
+        new_ds.to_csv(outname)
 
     return new_ds
+
+def oversampled_dataset(inname, outname, save_csv=True):
+
+    #Opening the datafile
+    ds = pd.read_csv(inname)
+
+    # getting the unique values for prop_id
+    bids = ds[ds['booking_bool']==1].drop_duplicates('prop_id').index.values
+    nbids = ds[ds['booking_bool']==0].drop_duplicates('prop_id').index.values
+
+    # sample 25000 records (80-20%)
+    bsmpl = np.random.choice(bids, 20000, False)
+    nbsmpl = np.random.choice(nbids, 5000, False)
+
+    # filter out the dataset
+    rows = pd.concat([ds[ds.index.isin(bsmpl)], ds[ds.index.isin(nbsmpl)]])
+
+    # save it to csv?
+    if save_csv:
+        rows.to_csv(outname)
+
+    return rows
+
+def norm_pcid(dset, key):
+    res = dset[key]. \
+        groupby(dset['prop_country_id']). \
+        apply(lambda x: (x - x.mean()) / x.std())
+    return res
+
+#ds['norm_star_rating'] = norm_star_rating(ds)
+#
+#ds[['norm_star_rating', '']].corr()
+#
+#ds['srch_comp'] = ds['srch_length_of_stay'] / (ds['srch_adults_count'] + 0.5*ds['srch_room_count'] + 1.5*ds['srch_children_count'])

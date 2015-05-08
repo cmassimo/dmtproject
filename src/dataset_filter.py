@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from math import log
 
 # DEPRECATED
 def sample_dataset(inname, outname):
@@ -26,10 +27,7 @@ def sample_dataset(inname, outname):
 
     return new_ds
 
-def oversampled_dataset(inname, outname, save_csv=True):
-
-    #Opening the datafile
-    ds = pd.read_csv(inname)
+def oversampled_dataset(ds, outname, save_csv=True):
 
     # getting the unique values for prop_id
     bids = ds[ds['booking_bool']==1].drop_duplicates('prop_id').index.values
@@ -65,8 +63,7 @@ def log_norm_srch_id(dataset, key):
     
     return nlog
 
-#ds['norm_review_rating'] = norm_pcid(ds, 'prop_starrating')
-#
-#ds[['norm_review_rating', 'booking_bool']].corr()
-#
-#ds['srch_comp'] = ds['srch_length_of_stay'] / (ds['srch_adults_count'] + 0.5*ds['srch_room_count'] + 1.5*ds['srch_children_count'])
+def loc_ratio2(dset):
+    nlog_price = log_norm_srch_id(dset, 'srch_id')
+    nlog_price_center = nlog_price.groupby(dset['srch_id']).apply(lambda x: (x - min(x))/(max(x) - min(x))+1)
+    return dset['prop_location_score2'] / nlog_price_center

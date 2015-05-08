@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import pylab
+from math import log
 
 from dataset_filter import sample_dataset
 
@@ -68,4 +69,36 @@ ds[ds['prop_log_historical_price'] != 0]['prop_log_historical_price'].plot(kind=
 #save figure with no-whitespace around picture
 pylab.savefig(os.path.join('..', 'figures', 'price_boxplot.png'), bbox_inches='tight')
 
+#correlations
 ds[ds['booking_bool'] == 1][['visitor_hist_adr_usd', 'prop_log_historical_price']].corr()
+
+def log_norm_srch_id(dataset, key):
+    ''' dataset = pandas datafram
+        key = index of variable to be normalized (string)
+        Returns normalized log of column by srch_id.
+    '''
+    nlog = dataset[key].apply(lambda x: log(x+1))
+    #normalize by each srch_id
+    nlog = dataset[key].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
+    
+    return nlog
+
+ds['nlog_price'] = log_norm_srch_id(ds, 'price_usd')
+ds['nlog_price'].plot(kind='hist', bins=25)
+
+#attempt to engineer some composite of location and price
+#center the price between 1 and 2
+ds['nlog_price_center'] = ds['nlog_price'].groupby(ds['srch_id']).apply(lambda x: (x - min(x))/(max(x) - min(x))+1)
+ds['nlog_price_center'].describe()
+
+ds['loc_ratio1'] = ds['prop_location_score1'] / ds['nlog_price_center']
+ds['loc_ratio2'] = ds['prop_location_score2'] / ds['nlog_price_center']
+
+#with quality metrics
+ds['loc_ratio2_rating'] = ds['loc_ratio2'] * ((ds['prop_review_score'] + ds['prop_starrating']) / 2)
+#best correlation with booking: 0.078
+
+
+
+
+    

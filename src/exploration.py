@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import pylab
-from math import log
 
 from dataset_filter import *
 
@@ -69,11 +68,9 @@ ds[ds['prop_log_historical_price'] != 0]['prop_log_historical_price'].plot(kind=
 #save figure with no-whitespace around picture
 pylab.savefig(os.path.join('..', 'figures', 'price_boxplot.png'), bbox_inches='tight')
 
-#correlations
-ds[ds['booking_bool'] == 1][['visitor_hist_adr_usd', 'prop_log_historical_price']].corr()
 
 ds['nlog_price'] = log_norm_srch_id(ds, 'price_usd')
-ds['nlog_price'].plot(kind='hist', bins=25)
+ds['nlog_price'].plot(kind='hist', bins=50)
 
 #attempt to engineer some composite of location and price
 #center the price between 1 and 2
@@ -85,7 +82,7 @@ ds['loc_ratio2'] = ds['prop_location_score2'] / ds['nlog_price_center']
 
 #with quality metrics
 ds['loc_ratio2_rating'] = ds['loc_ratio2'] * ((ds['prop_review_score'] + ds['prop_starrating']) / 2)
-#best correlation with booking: 0.078
+#best correlation with booking: ~.2
 
 
 

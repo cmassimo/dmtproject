@@ -1,38 +1,36 @@
 from dataset_filter import *
-from sklearn import preprocessing
+from sklearn import preprocessing as pp
 import os
 
 dataset = pd.read_csv(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
 
-def feature_extraction(dset, scale=True):
-    lean_ds = dset[dset['price_usd']<10000]
+def feature_extraction(dset):
+    dset = dset[dset['price_usd']<5000]
+    field_list = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window', \
+        'srch_adults_count', 'srch_children_count', 'prop_id', 'click_bool', \
+        'booking_bool']
 
-    fields = {
-            'prop_review_score':   lean_ds['prop_review_score'],
-            'promotion_flag':       lean_ds['promotion_flag'],
-            'srch_length_of_stay':  lean_ds['srch_length_of_stay'],
-            'srch_booking_window':  lean_ds['srch_booking_window'],
-            'srch_adults_count':    lean_ds['srch_adults_count'],
-            'srch_children_count':  lean_ds['srch_children_count'],
-            'srch_room_count':      lean_ds['srch_room_count'],
-            'loc_ratio2':           loc_ratio2(lean_ds)
-            }
+    ds = dset[field_list].astype(float64)
 
-    ds = pd.DataFrame(fields)
+    ds.loc[:, 'prop_review_score'] = dset['prop_review_score'].fillna(0).astype(float64)
+    ds.loc[:, 'loc_ratio2'] = loc_ratio2(dset).fillna(0).astype(float64)
+    ds.loc[:, 'norm_star_rating'] = norm_pcid(dset, 'prop_starrating').astype(float64)
+    ds.loc[:, 'nlog_price'] = log_norm_srch_id(dset, 'price_usd').fillna(0).astype(float64)
 
-    if scale:
-        ds_scaled = preprocessing.scale(ds)
-        ds_scaled['norm_star_rating']= norm_pcid(lean_ds, 'prop_star_rating')
-        ds_scaled = preprocessing.normalize(ds_scaled)
-        fname = 'oversampled_scaled.csv'
-    else:
-        ds_scaled = ds
-        ds_scaled['norm_star_rating']= norm_pcid(lean_ds, 'prop_star_rating')
-        fname = 'oversampled_nonscaled.csv'
+    return ds
 
-    ds_scaled['nlog_price'] = log_norm_srch_id(lean_ds, 'price_usd')
-    ds_scaled['booking_bool'] = lean_ds['booking_bool']
-    ds_scaled['pro_id'] = lean_ds['prop_id']
+# still WIP
+def scale_features(dset):
+    field_list = ['prop_review_score', 'promotion_flag', 'srch_length_of_stay', \
+        'srch_booking_window', 'srch_adults_count', 'srch_children_count', 'prop_id', \
+        'click_bool', 'booking_bool']
 
-    return oversampled_dataset(ds_scaled, fname)
+    return dset[field_list].apply(pp.scale, axis=0, raw=True)
+
+# still WIP
+def normalize_features(dset):
+    return dset.apply(pp.normalize, axis=0, raw=True)
+
+def get_final_trainingset(dset):
+    return oversampled_dataset(normalize_features(scale_features(feature_extraction(dset))), '../data/oversampled_scalenorm.csv')
 

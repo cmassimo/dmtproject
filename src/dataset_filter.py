@@ -83,11 +83,11 @@ def log_norm_srch_id(dataset, key):
         key = index of variable to be normalized (string)
         Returns normalized log of column by srch_id.
     '''
-    dataset['log'] = dataset[key].apply(lambda x: log(x+1))
+    log= dataset[key].apply(lambda x: log(x+1))
     #normalize by each srch_id
-    dataset['slog'] = dataset['log'].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
+    slog = dataset['log'].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
 
-    return dataset['slog']
+    return slog
 
 def loc_ratio2(dset):
     nlog_price = log_norm_srch_id(dset, 'srch_id')

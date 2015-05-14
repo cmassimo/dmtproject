@@ -3,13 +3,12 @@ import numpy as np
 import os
 from dataset_filter import *
 
-#dataset = pd.read_csv(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
-
 def feature_extraction(dset):
 
     dset = dset[dset['price_usd']<5000]
     field_list = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window', \
-        'srch_adults_count', 'srch_children_count', 'prop_id', 'booking_bool', 'prop_location_score2']
+        'srch_adults_count', 'srch_children_count', 'prop_id', 'click_bool', 'booking_bool', \
+        'prop_location_score2', 'srch_id']
 
     ds = dset[field_list].astype(float)
 
@@ -31,6 +30,8 @@ def scale_features(dset):
     tmp.loc[:, 'norm_star_rating'] = dset['norm_star_rating']
     tmp.loc[:, 'nlog_price'] = dset['nlog_price']
     tmp.loc[:, 'prop_id'] = dset['prop_id']
+    tmp.loc[:, 'srch_id'] = dset['srch_id']
+    tmp.loc[:, 'click_bool'] = dset['click_bool']
     tmp.loc[:, 'booking_bool'] = dset['booking_bool']
     tmp.loc[:, 'label'] = dset['label']
 
@@ -44,6 +45,8 @@ def normalize_samples(dset):
     tmp = dset[field_list].apply(lambda x: pp.normalize(x)[0], axis=1, raw=True)
 
     tmp.loc[:, 'prop_id'] = dset['prop_id']
+    tmp.loc[:, 'srch_id'] = dset['srch_id']
+    tmp.loc[:, 'click_bool'] = dset['click_bool']
     tmp.loc[:, 'booking_bool'] = dset['booking_bool']
     tmp.loc[:, 'label'] = dset['label']
 
@@ -56,6 +59,6 @@ def get_final_trainingset(dset):
         tset = pd.read_csv(fname)
         return tset
     else:
-        tset = oversampled_dataset(normalize_samples(scale_features(feature_extraction(dset))), fname)
-        return tset.drop('booking_bool', 1).drop('prop_id', 1)
+        tset = oversample_dataset(normalize_samples(scale_features(feature_extraction(dset))), fname)
+        return tset.drop('booking_bool', 1)
 

@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
-from math import log
+from math import log, floor
 import sklearn as sk
 from sklearn import preprocessing
 
-# DEPRECATED
-def sample_dataset(inname, outname):
-#    print('DEPRECATED FUNCTION: use "oversampled_dataset(inname, outname, save_csv =True)" instead.')
-#    return None
+def sample_dataset(inname, outname, save_csv=True):
 
     #Opening the datafile
     ds = pd.read_csv(inname)
@@ -15,10 +12,10 @@ def sample_dataset(inname, outname):
     # getting the unique values for srch_id
     ids = ds['srch_id'].unique()
 
-    #ids.size
+    cutoff = floor(ids.size*0.1)
 
     # sample 1000 srch_id(s)
-    smpl = np.random.choice(ids, 1000, False)
+    smpl = np.random.choice(ids, cutoff, False)
 
     # filter out the dataset
     new_ds = ds[ds['srch_id'].isin(smpl)]
@@ -29,18 +26,22 @@ def sample_dataset(inname, outname):
 
     return new_ds
 
-def oversampled_dataset(ds, outname, save_csv=True):
+def oversample_dataset(ds, outname, save_csv=True):
 
-    # getting the unique values for prop_id
-    bids = ds[ds['booking_bool']==1].drop_duplicates('prop_id').index.values
-    nbids = ds[ds['booking_bool']==0].drop_duplicates('prop_id').index.values
+    # getting the values for prop_id
+    bids = ds[ds['booking_bool']==1].index.values
+    cids = ds[ds['booking_bool']==0][ds['click_bool']==1].index.values
+    nids = ds[ds['booking_bool']==0][ds['click_bool']==0].index.values
 
-    # sample 30000 records (50-50%)
-    bsmpl = np.random.choice(bids, 15000, False)
-    nbsmpl = np.random.choice(nbids, 15000, False)
+    bcutoff = bids.size
+    ncutoff = int(floor(bcutoff*0.2))
+
+    bsmpl = bids
+    csmpl = cids
+    nsmpl = np.random.choice(nids, ncutoff, False)
 
     # filter out the dataset
-    rows = pd.concat([ds[ds.index.isin(bsmpl)], ds[ds.index.isin(nbsmpl)]])
+    rows = pd.concat([ds[ds.index.isin(bsmpl)], ds[ds.index.isin(csmpl)], ds[ds.index.isin(nsmpl)]])
 
     # save it to csv?
     if save_csv:

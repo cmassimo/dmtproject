@@ -11,7 +11,7 @@ from data_preparation import *
 whole_dataset = pd.read_csv(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
 osn = get_final_trainingset(whole_dataset)
 
-x = osn.filter(regex="[^(label)]")
+x = osn.filter(regex="[^(label)(booking_bool)(srch_id)(prop_id)(click_bool)]")
 y = osn.filter(regex="label")
 
 X, Y = shuffle(x, y, random_state=13)

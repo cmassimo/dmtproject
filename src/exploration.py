@@ -11,7 +11,7 @@ from dataset_filter import *
 #ds = pd.read_csv('training_set_VU_DM_2014.csv')
 
 #load a smaller dataset
-ds = oversampled_dataset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), os.path.join('..', 'data' , 'oversampled_small_dataset.csv'))
+ds = oversampled_low_price_dataset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), os.path.join('..', 'data' , 'oversampled_small_dataset.csv'), 4000)
 
 def STATAclean(ds):
     STATAds = ds

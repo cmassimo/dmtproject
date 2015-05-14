@@ -83,13 +83,16 @@ def log_norm_srch_id(dataset, key):
         key = index of variable to be normalized (string)
         Returns normalized log of column by srch_id.
     '''
-    log= dataset[key].apply(lambda x: log(x+1))
+    tmp_log = dataset[key].apply(lambda x: log(x+1))
     #normalize by each srch_id
-    slog = dataset['log'].groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
+    slog = tmp_log.groupby(dataset['srch_id']).apply(lambda x: (x-x.mean())/x.std())
 
     return slog
 
 def loc_ratio2(dset):
-    nlog_price = log_norm_srch_id(dset, 'srch_id')
+    nlog_price = log_norm_srch_id(dset, 'price_usd')
     nlog_price_center = nlog_price.groupby(dset['srch_id']).apply(lambda x: (x - min(x))/(max(x) - min(x))+1)
-    return dset['prop_location_score2'] / nlog_price_center
+    return dset['prop_location_score2'].fillna(0) / nlog_price_center
+
+def label(dset):
+   return dset['booking_bool'] + dset['click_bool']

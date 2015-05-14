@@ -53,8 +53,8 @@ def get_final_trainingset(dset):
 
     if os.path.isfile(fname):
         tset = pd.read_csv(fname)
+        return tset
     else:
         tset = oversampled_dataset(normalize_samples(scale_features(feature_extraction(dset))), fname)
-
-    return tset.drop('booking_bool', 1).drop('prop_id', 1)
+        return tset.drop('booking_bool', 1).drop('prop_id', 1)
 

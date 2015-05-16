@@ -15,7 +15,7 @@ def order_booking_only(dataset):
     df_sort = dataset.groupby('srch_id').apply(lambda x: x.sort(['booking_prob', 'clicking_prob'], axis=0, ascending=False))
     
     #file output
-    df_sort[['srch_id','prop_id']].to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
+    df_sort[['srch_id','prop_id']].astype(int).to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
     
 def order_smarter(dataset):
     '''Calculates the ordering of hotels. Dataset should contain srch_id, prop_id,

@@ -26,3 +26,23 @@ def order_smarter(dataset):
     
     #file output
     df_sort[['srch_id','prop_id']].to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
+
+def calculate_ndcg(ordering):
+    def ndcg(group):
+        score = (group['booking_bool']*5/group['pos_rank']).sum()
+        score += ((group['click_bool']-group['booking_bool'])/group['pos_rank']).sum()
+
+        click_sum = (group['click_bool'].sum() - group['booking_bool'].sum())
+
+        if (group['booking_bool'].sum() > 0):
+            opt = 5
+        else:
+            opt = 0
+
+        for i in range(click_sum, 1, -1):
+            opt += 1/float(i)
+
+        return float(score) / float(opt)
+
+    return ordering.apply(ndcg).mean()
+

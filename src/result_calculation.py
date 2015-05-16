@@ -23,6 +23,16 @@ def order_booking_only(dataset):
     #sort by booking probability    
     df_sort = dataset.groupby('srch_id').apply(lambda x: x.sort(['booking_prob', 'clicking_prob'], axis=0, ascending=False))
     
+    #calculate position
+    df_sort['pos'] = None
+    def pos(group):
+        a = 1        
+        for item in group:
+            group['pos'] = a
+            a += 1 
+    
+    df_sort = df_sort.groupby('srch_id').apply(pos)
+    
     #file output
     df_sort[['srch_id','prop_id']].astype(int).to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
     
@@ -43,3 +53,11 @@ def order_score(dataset):
     df_sort[['srch_id','prop_id']].to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
     
     return df_sort
+
+def ndcg_norm(dataset):
+    
+    for group in dataset.groupby('srch_id'):
+        if (sum(dataset['booking_bool']) == 1):
+            print 'hi'
+        else:
+            pass

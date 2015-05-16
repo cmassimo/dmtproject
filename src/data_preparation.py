@@ -18,7 +18,7 @@ def feature_extraction(dset):
     ds.loc[:, 'nlog_price'] = log_norm_srch_id(dset, 'price_usd').fillna(0)
     ds.loc[:, 'label'] = label(dset)
 
-    return ds
+    return ds.fillna(0)
 
 def test_feature_extraction(dset):
 
@@ -34,7 +34,7 @@ def test_feature_extraction(dset):
     ds.loc[:, 'norm_star_rating'] = norm_pcid(dset, 'prop_starrating')
     ds.loc[:, 'nlog_price'] = log_norm_srch_id(dset, 'price_usd').fillna(0)
 
-    return ds
+    return ds.fillna(0)
 
 def scale_features(dset):
     field_list = ['prop_review_score', 'promotion_flag', 'srch_length_of_stay', \

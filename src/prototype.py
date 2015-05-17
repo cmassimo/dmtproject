@@ -39,7 +39,7 @@ gparams = grid[0]
 # params optimization
 for gparams in grid:
 
-    print "New 2FCV iteration, params:", gparams
+    print "New 3FCV iteration, params:", gparams
 
     folds = StratifiedKFold(y, n_folds=3, shuffle=True)#, random_state=17)
     results = []
@@ -98,6 +98,13 @@ clf.fit(X_train_clean, y_train)
 # test set load and final predictions
 test_data = pd.read_csv(os.path.join('..','data','test_set_VU_DM_2014.csv'))
 test_set = test_feature_extraction(test_data).values
+
+cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
+'srch_adults_count', 'srch_children_count', 'norm_star_rating',  \
+ 'prop_location_score2','prop_review_score','nlog_price',\
+ 'loc_ratio2', 'prop_id', 'srch_id']
+
+test_set = test_set[cols]
 
 test_set_clean = [x[:9] for x in test_set]
 prediction = clf.predict(test_set_clean)

@@ -65,63 +65,68 @@ for gparams in grid:
 
         print "predictions MSE:", mse
 
-#        #combining results: need to concatenate values and labels/indexes
-#        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
-#        keys = osn.keys().drop('label')
-#        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
-#
-#        result = pd.DataFrame(data=a, columns=keys)
-#
-#        # calculate the ordering
-#        print "Calculating the ordering based on the returned probabilities..."
-#        score = calculate_ndcg(order('booking', result))
-#
-#        print "This model scored an NDCG of:", score
-#
-#        results.append([score, params])
+        #combining results: need to concatenate values and labels/indexes
+        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+        keys = osn.keys().drop('label')
+        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+
+        result = pd.DataFrame(data=a, columns=keys)
+
+        # calculate the ordering
+        print "Calculating the ordering based on the returned probabilities..."
+        score = calculate_ndcg(order('booking', result))
+
+        print "This model scored an NDCG of:", score
+
+        results.append([score, params])
 
         print "-----"
 
-# TODO integrate from alternative_prototype.py
-
-best_params = None
+best_params = gparams#None
 max_score = 0
+
 for sc, par in results:
    if sc > max_score:
        best_params = par
+
+print
+print "Selecting best params tuple:", best_params
+print "Score:", max_score
     
+print "Fitting final model to whole dataset..."
 # train final model on all training set with best params
 X_train_clean = [x[:9] for x in X]
+y_train = y
 clf = ensemble.GradientBoostingClassifier(learning_rate=float(best_params[0]), max_depth=int(best_params[1]), n_estimators=int(best_params[2]))
 clf.fit(X_train_clean, y_train)
 
+print "Loading and extracting test data..."
 # test set load and final predictions
 test_data = pd.read_csv(os.path.join('..','data','test_set_VU_DM_2014.csv'))
-test_set = test_feature_extraction(test_data).values
+test_set = test_feature_extraction(test_data)
 
 cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
 'srch_adults_count', 'srch_children_count', 'norm_star_rating',  \
  'prop_location_score2','prop_review_score','nlog_price',\
  'loc_ratio2', 'prop_id', 'srch_id']
 
-test_set = test_set[cols]
+test_set = test_set[cols].values
 
+print "Final predictions..."
 test_set_clean = [x[:9] for x in test_set]
 prediction = clf.predict(test_set_clean)
 probs = clf.predict_proba(test_set_clean)
 
-#        #combining results: need to concatenate values and labels/indexes
-#        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
-#        keys = osn.keys().drop('label')
-#        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
-#
-#        result = pd.DataFrame(data=a, columns=keys)
-#
-#        # calculate the ordering
-#        print "Calculating the ordering based on the returned probabilities..."
-#        score = calculate_ndcg(order('booking', result))
-#
-#        print "This model scored an NDCG of:", score
-#
-#        results.append([score, params])
+#combining results: need to concatenate values and labels/indexes
+a = array([np.append(test_set[i], probs[i]) for i in range(test_set.shape[0])])
+keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+
+final_result = pd.DataFrame(data=a, columns=keys)
+
+# calculate the ordering
+print "Calculating the ordering based on the returned probabilities..."
+final_score = calculate_ndcg(order('booking', final_result))
+
+print "Final NDCG for test set:", final_score
+
 

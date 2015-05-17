@@ -57,8 +57,8 @@ def order_score(dataset):
 
 def calculate_ndcg(ordering):
     def ndcg(group):
-        score = (group['booking_bool']*5/group['pos_rank']).sum()
-        score += ((group['click_bool']-group['booking_bool'])/group['pos_rank']).sum()
+        score = (group['booking_bool']*5/group['pos']).sum()
+        score += ((group['click_bool']-group['booking_bool'])/group['pos']).sum()
 
         click_sum = (group['click_bool'].sum() - group['booking_bool'].sum())
 

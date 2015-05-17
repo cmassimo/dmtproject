@@ -75,3 +75,13 @@ def calculate_ndcg(ordering):
 
     return ordering.apply(ndcg).mean()
 
+
+pre_position = df[df['srch_id']==1].index.tolist()
+position = []
+for i in pre_position:
+    pos = i + 1
+    position.append(pos)
+
+print position
+  
+

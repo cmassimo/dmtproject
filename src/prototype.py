@@ -34,16 +34,16 @@ for gparams in grid:
 
     print "New 2FCV iteration, params:", gparams
 
-    folds = StratifiedKFold(y, n_folds=2, shuffle=True)#, random_state=17)
+    folds = StratifiedKFold(y, n_folds=3, shuffle=True)#, random_state=17)
     results = []
 
     # 2FCV
     for train_index, test_index in folds:
 
-        print train_index
-        print test_index
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+        X_train = X[train_index]
+        X_test = X[test_index]
+        y_train = y[train_index]
+        y_test = y[test_index]
         
         #filter out unwanted columns (prop_id etc) -> because of ndarray has no label indexes
         X_train_clean = [x[:9] for x in X_train]
@@ -58,24 +58,55 @@ for gparams in grid:
 
         print "predictions MSE:", mse
 
-        #combining results: need to concatenate values and labels/indexes
-        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
-        keys = osn.keys().drop('label')
-        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
-
-        result = pd.DataFrame(data=a, columns=keys)
-
-        # calculate the ordering
-        print "Calculating the ordering based on the returned probabilities..."
-        score = calculate_ndcg(order('booking', result))
-
-        print "This model scored an NDCG of:", score
-
-        results.append([score, params])
+#        #combining results: need to concatenate values and labels/indexes
+#        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+#        keys = osn.keys().drop('label')
+#        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+#
+#        result = pd.DataFrame(data=a, columns=keys)
+#
+#        # calculate the ordering
+#        print "Calculating the ordering based on the returned probabilities..."
+#        score = calculate_ndcg(order('booking', result))
+#
+#        print "This model scored an NDCG of:", score
+#
+#        results.append([score, params])
 
         print "-----"
 
 # TODO integrate from alternative_prototype.py
-# train final model picked from "results" on whole osn.
-# test set load and final predictions
 
+best_params = None
+max_score = 0
+for sc, par in results:
+   if sc > max_score:
+       best_params = par
+    
+# train final model on all training set with best params
+X_train_clean = [x[:9] for x in X]
+clf = ensemble.GradientBoostingClassifier(learning_rate=float(best_params[0]), max_depth=int(best_params[1]), n_estimators=int(best_params[2]))
+clf.fit(X_train_clean, y_train)
+
+# test set load and final predictions
+test_data = pd.read_csv(os.path.join('..','data','test_set_VU_DM_2014.csv'))
+test_set = test_feature_extraction(test_data).values
+
+test_set_clean = [x[:9] for x in test_set]
+prediction = clf.predict(test_set_clean)
+probs = clf.predict_proba(test_set_clean)
+
+#        #combining results: need to concatenate values and labels/indexes
+#        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+#        keys = osn.keys().drop('label')
+#        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+#
+#        result = pd.DataFrame(data=a, columns=keys)
+#
+#        # calculate the ordering
+#        print "Calculating the ordering based on the returned probabilities..."
+#        score = calculate_ndcg(order('booking', result))
+#
+#        print "This model scored an NDCG of:", score
+#
+#        results.append([score, params])

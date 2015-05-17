@@ -19,22 +19,16 @@ def order(order, dataset):
 def order_booking_only(dataset):
     '''Calculates the ordering of hotels. Dataset should contain srch_id, prop_id,
     booking_prob, clicking_prop'''
+
+    def sort_pos(x):
+        tmp = x.sort(['booking_prob', 'clicking_prob'], axis=0, ascending=False)
+        tmp['pos'] = range(1, len(x)+1)
+        return tmp
     
-    #sort by booking probability    
-    df_sort = dataset.groupby('srch_id').apply(lambda x: x.sort(['booking_prob', 'clicking_prob'], axis=0, ascending=False))
+    #sort by booking probability
+    print "-- sorting properties --"
+    df_sort = dataset.groupby('srch_id').apply(sort_pos)
     
-    #calculate position
-    df_sort['pos'] = None
-    df_sort = df_sort.groupby('srch_id')
-    
-    # df_sort.groups[x] returns a dict
-    for group in df_sort.groups:
-        b = 1
-        for member in range(len(df_sort.groups.keys())):
-            while b <= len(df_sort.groups[group]):
-                df_sort.get_group(group).ix[group, member]['pos'] = b
-                b += 1         
-     
     #file output
     df_sort[['srch_id','prop_id']].astype(int).to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
     
@@ -56,32 +50,27 @@ def order_score(dataset):
     
     return df_sort
 
+def ndcg(group):
+    score = (group['booking_bool']*5/group['pos']).sum()
+    score += ((group['click_bool']-group['booking_bool'])/group['pos']).sum()
+
+    click_sum = int((group['click_bool'].sum() - group['booking_bool'].sum()))
+
+    if (group['booking_bool'].sum() > 0):
+        opt = 5
+    else:
+        opt = 0
+
+    for i in range(click_sum, 1, -1):
+        opt += 1/float(i)
+
+    if opt > 0:
+        gain = float(score) / float(opt)
+    else:
+        gain = 0
+
+    return gain
+
 def calculate_ndcg(ordering):
-    def ndcg(group):
-        score = (group['booking_bool']*5/group['pos']).sum()
-        score += ((group['click_bool']-group['booking_bool'])/group['pos']).sum()
-
-        click_sum = (group['click_bool'].sum() - group['booking_bool'].sum())
-
-        if (group['booking_bool'].sum() > 0):
-            opt = 5
-        else:
-            opt = 0
-
-        for i in range(click_sum, 1, -1):
-            opt += 1/float(i)
-
-        return float(score) / float(opt)
-
-    return ordering.apply(ndcg).mean()
-
-
-pre_position = df[df['srch_id']==1].index.tolist()
-position = []
-for i in pre_position:
-    pos = i + 1
-    position.append(pos)
-
-print position
-  
+    return ordering.groupby('srch_id').apply(ndcg).mean()
 

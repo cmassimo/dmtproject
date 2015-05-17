@@ -39,9 +39,9 @@ gparams = grid[0]
 # params optimization
 for gparams in grid:
 
-    print "New 3FCV iteration, params:", gparams
+    print "New 2FCV iteration, params:", gparams
 
-    folds = StratifiedKFold(y, n_folds=3, shuffle=True)#, random_state=17)
+    folds = StratifiedKFold(y, n_folds=2, shuffle=True)#, random_state=17)
     results = []
 
     # 2FCV
@@ -67,8 +67,9 @@ for gparams in grid:
 
         #combining results: need to concatenate values and labels/indexes
         a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+        a = array([np.append(a[i], 0) for i in range(X_test.shape[0])])
         keys = osn.keys().drop('label')
-        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob', 'pos']))
 
         result = pd.DataFrame(data=a, columns=keys)
 

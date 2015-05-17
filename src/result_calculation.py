@@ -25,14 +25,15 @@ def order_booking_only(dataset):
     
     #calculate position
     df_sort['pos'] = None
-    def pos(group):
-        a = 1        
-        for item in group:
-            group['pos'] = a
-            a += 1 
+    df_sort = df_sort.groupby('srch_id')
     
-    df_sort = df_sort.groupby('srch_id').apply(pos)
-    
+    # df_sort.groups[x] returns a dict
+    b = 1
+    for group in df_sort.groups:
+        while b < len(df_sort.groups[group]):
+            df_sort[df_sort.groups[group]]['pos'] = b
+            b += 1         
+     
     #file output
     df_sort[['srch_id','prop_id']].astype(int).to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
     

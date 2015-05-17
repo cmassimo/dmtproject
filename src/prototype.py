@@ -21,6 +21,13 @@ grid = expandgrid(pranges.keys(), *pranges.values())
 
 osn = get_final_trainingset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), False).filter(regex="[^(Unnamed: 0)]")
 
+cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
+'srch_adults_count', 'srch_children_count', 'norm_star_rating',  \
+ 'prop_location_score2','prop_review_score','nlog_price',\
+ 'loc_ratio2', 'click_bool','prop_id', 'srch_id','booking_bool','label']
+
+osn = osn[cols]
+
 X = osn.filter(regex="[^(label)]").values
 y = osn['label'].values
 
@@ -110,3 +117,4 @@ probs = clf.predict_proba(test_set_clean)
 #        print "This model scored an NDCG of:", score
 #
 #        results.append([score, params])
+

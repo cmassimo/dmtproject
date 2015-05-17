@@ -30,9 +30,10 @@ def order_booking_only(dataset):
     # df_sort.groups[x] returns a dict
     for group in df_sort.groups:
         b = 1
-        while b <= len(df_sort.groups[group]):
-            df_sort[df_sort.groups[group]]['pos'] = b # <- fault must be here, iteration through group works corretly I think
-            b += 1         
+        for member in range(len(df_sort.groups.keys())):
+            while b <= len(df_sort.groups[group]):
+                df_sort.get_group(group).ix[group, member]['pos'] = b
+                b += 1         
      
     #file output
     df_sort[['srch_id','prop_id']].astype(int).to_csv(os.path.join('..', 'data', 'results.csv'), index=False)

@@ -28,10 +28,10 @@ def order_booking_only(dataset):
     df_sort = df_sort.groupby('srch_id')
     
     # df_sort.groups[x] returns a dict
-    b = 1
     for group in df_sort.groups:
-        while b < len(df_sort.groups[group]):
-            df_sort[df_sort.groups[group]]['pos'] = b
+        b = 1
+        while b <= len(df_sort.groups[group]):
+            df_sort[df_sort.groups[group]]['pos'] = b # <- fault must be here, iteration through group works corretly I think
             b += 1         
      
     #file output

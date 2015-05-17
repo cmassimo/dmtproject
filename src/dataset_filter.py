@@ -4,13 +4,10 @@ from math import log, floor
 import sklearn as sk
 from sklearn import preprocessing
 
-def sample_dataset(inname, outname, save_csv=True):
-
-    #Opening the datafile
-    ds = pd.read_csv(inname)
+def sample_dataset(ds, exclude_srch_ids):
 
     # getting the unique values for srch_id
-    ids = ds['srch_id'].unique()
+    ids = ds['srch_id'].unique() - exclude_srch_ids
 
     cutoff = floor(ids.size*0.1)
 
@@ -21,8 +18,7 @@ def sample_dataset(inname, outname, save_csv=True):
     new_ds = ds[ds['srch_id'].isin(smpl)]
 
     # save it to csv
-    if (save_csv):
-        new_ds.to_csv(outname)
+    new_ds.to_csv(os.path.join('..', 'data', 'validation.csv'))
 
     return new_ds
 

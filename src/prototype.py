@@ -1,49 +1,81 @@
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-from sklearn import datasets
 from sklearn import ensemble
 from sklearn.utils import shuffle
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.metrics import mean_squared_error
+import itertools
 from data_preparation import *
 from result_calculation import *
 
-whole_dataset = pd.read_csv(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
-osn = get_final_trainingset(whole_dataset).filter(regex="[^(Unnamed: 0)]")
+def expandgrid(names, *itrs):
+    product = list(itertools.product(*itrs))
+    return pd.DataFrame({names[i]: [x[i] for x in product] for i in range(len(names))}).values
 
-#dont get this -> why not srch_id and prop_id? We need this to calculate the order
-#x = osn.filter(regex="[^(label)(booking_bool)(srch_id)(prop_id)(click_bool)]")
-#shuy = osn.filter(regex="label")
+pranges = {'learning_rate': [0.05, 0.1, 0.15], \
+        'n_estimators': [200, 100, 50], \
+        'max_depth': [4, 3, 2]}
 
-#X, y = shuffle(osn.filter(regex="[^(label)]"), osn['label'], random_state=13)
+grid = expandgrid(pranges.keys(), *pranges.values())
+
+osn = get_final_trainingset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), False).filter(regex="[^(Unnamed: 0)]")
+
 X = osn.filter(regex="[^(label)]").values
 y = osn['label'].values
 
-folds = StratifiedKFold(y, 2, shuffle=True)
+# with canopy you can skip the outer for
+# initialize this variable and just run the inner code block,
+# from line 33 onward
+gparams = grid[0]
 
-for train_index, test_index in folds:
-    X_train, X_test = X[train_index], X[test_index]
-    y_train, y_test = y[train_index], y[test_index]
-    
-    #filter out unwanted columns (prop_id etc) -> because of ndarray has no label indexes
-    X_train_clean = [x[:9] for x in X_train]
-    X_test_clean = [x[:9] for x in X_test]
+# params optimization
+for gparams in grid:
 
-    clf = ensemble.GradientBoostingClassifier()
-    clf.fit(X_train_clean, y_train)
-    prediction = clf.predict(X_test_clean)
-    probs = clf.predict_proba(X_test_clean)
-    mse = mean_squared_error(y_test, prediction)
+    print "New 2FCV iteration, params:", gparams
 
+    folds = StratifiedKFold(y, n_folds=2, shuffle=True)#, random_state=17)
+    results = []
 
-    #combining results: need to concatenate values and labels/indexes
-    a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
-    keys = osn.keys().drop('label')
-    keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+    # 2FCV
+    for train_index, test_index in folds:
 
-    result = pd.DataFrame(data=a, columns=keys)
+        print train_index
+        print test_index
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        
+        #filter out unwanted columns (prop_id etc) -> because of ndarray has no label indexes
+        X_train_clean = [x[:9] for x in X_train]
+        X_test_clean = [x[:9] for x in X_test]
 
-    #exporting
-#    score = calculate_ndcg(order('booking', result))
+        clf = ensemble.GradientBoostingClassifier(learning_rate=float(gparams[0]), max_depth=int(gparams[1]), n_estimators=int(gparams[2]))
+        clf.fit(X_train_clean, y_train)
+
+        prediction = clf.predict(X_test_clean)
+        probs = clf.predict_proba(X_test_clean)
+        mse = mean_squared_error(y_test, prediction)
+
+        print "predictions MSE:", mse
+
+        #combining results: need to concatenate values and labels/indexes
+        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+        keys = osn.keys().drop('label')
+        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
+
+        result = pd.DataFrame(data=a, columns=keys)
+
+        # calculate the ordering
+        print "Calculating the ordering based on the returned probabilities..."
+        score = calculate_ndcg(order('booking', result))
+
+        print "This model scored an NDCG of:", score
+
+        results.append([score, params])
+
+        print "-----"
+
+# TODO integrate from alternative_prototype.py
+# train final model picked from "results" on whole osn.
+# test set load and final predictions
 

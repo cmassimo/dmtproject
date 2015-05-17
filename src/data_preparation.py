@@ -3,7 +3,9 @@ import numpy as np
 import os
 from dataset_filter import *
 
-def feature_extraction(dset):
+def feature_extraction(inname):
+
+    dset = pd.read_csv(inname)
 
     dset = dset[dset['price_usd']<5000]
     field_list = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window', \
@@ -69,7 +71,7 @@ def normalize_samples(dset):
 
     return tmp
 
-def get_final_trainingset(dset, scale=True):
+def get_final_trainingset(inname, scale=True):
     if scale:
         fname = os.path.join('..', 'data', 'oversampled_scale.csv')
     else:
@@ -80,9 +82,9 @@ def get_final_trainingset(dset, scale=True):
         return tset
     else:
         if scale:
-            tset = oversample_dataset(normalize_samples(scale_features(feature_extraction(dset))), fname)
+            tset = oversample_dataset(normalize_samples(scale_features(feature_extraction(inname))), fname)
         else:
-            tset = oversample_dataset(feature_extraction(dset), fname)
+            tset = oversample_dataset(feature_extraction(inname), fname)
 
         return tset
 

@@ -110,15 +110,16 @@ cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
  'prop_location_score2','prop_review_score','nlog_price',\
  'loc_ratio2', 'prop_id', 'srch_id']
 
-test_set = test_set[cols].values
+tset = test_set[cols].values
 
 print "Final predictions..."
-test_set_clean = [x[:9] for x in test_set]
-prediction = clf.predict(test_set_clean)
-probs = clf.predict_proba(test_set_clean)
+tset_clean = [x[:9] for x in tset]
+final_prediction = clf.predict(tset_clean)
+final_probs = clf.predict_proba(tset_clean)
 
 #combining results: need to concatenate values and labels/indexes
-a = array([np.append(test_set[i], probs[i]) for i in range(test_set.shape[0])])
+a = array([np.append(test_set[i], final_probs[i]) for i in range(test_set.shape[0])])
+keys = test_set.keys()
 keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob']))
 
 final_result = pd.DataFrame(data=a, columns=keys)

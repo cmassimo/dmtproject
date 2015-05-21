@@ -40,7 +40,7 @@ def order_score(dataset):
     
     #calculate score
     dataset['book_score'] = 5*dataset['booking_prob']*0.02791
-    dataset['click_score'] = 1*dataset['clicking_prob']*dataset['click_bool']*0.01683
+    dataset['click_score'] = 1*dataset['clicking_prob']*0.01683
     dataset['score'] = dataset[['book_score', 'click_score']].max(axis=1)
 
     df_sort = dataset.groupby('srch_id').apply(lambda x: x.sort(['score'], axis=0, ascending=False))

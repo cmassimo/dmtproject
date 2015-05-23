@@ -10,8 +10,8 @@ from dataset_filter import *
 #load the entire dataset
 #ds = pd.read_csv('training_set_VU_DM_2014.csv')
 
-#load a smaller dataset
-ds = oversampled_low_price_dataset(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'), os.path.join('..', 'data' , 'oversampled_small_dataset.csv'), 4000)
+#WRONG SAMPLING!! GO TO DATA PREPARATION, USE THOSE FUNCTIONS AND THEN PLOT!
+#ds = oversample_dataset(pd.read_csv(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv')), os.path.join('..', 'data' , 'oversampled_small_dataset.csv'), 4000)
 
 def STATAclean(ds):
     STATAds = ds
@@ -40,7 +40,7 @@ orderedfilter = ds[ds['random_bool'] == 0]
 orderedfilter['booking_bool'].mean() - randomfilter['booking_bool'].mean()
 
 #correlations
-ds[['booking_bool', 'prop_starrating', 'prop_review_score', 'prop_brand_bool', 'prop_location_score1', 'prop_location_score2', 'prop_log_historical_price', 'price_usd', 'promotion_flag', 'srch_length_of_stay', 'srch_saturday_night_bool', 'orig_destination_distance']].corr()
+ds[['booking_bool', 'prop_brand_bool', 'prop_starrating', 'prop_review_score', 'prop_location_score1', 'prop_location_score2', 'prop_log_historical_price', 'price_usd', 'promotion_flag', 'srch_length_of_stay', 'srch_saturday_night_bool', 'orig_destination_distance']].corr()
 
 #############
 #plotting
@@ -68,6 +68,8 @@ ds[ds['prop_log_historical_price'] != 0]['prop_log_historical_price'].plot(kind=
 #save figure with no-whitespace around picture
 pylab.savefig(os.path.join('..', 'figures', 'price_boxplot.png'), bbox_inches='tight')
 
+#very few huge outliers
+ds[ds['price_usd'] > 5000]['price_usd'].value_counts().sum().astype(float)/ds[ds['price_usd'] < 5000]['price_usd'].value_counts().sum()
 
 ds['nlog_price'] = log_norm_srch_id(ds, 'price_usd')
 ds['nlog_price'].plot(kind='hist', bins=50)

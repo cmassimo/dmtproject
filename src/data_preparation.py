@@ -38,6 +38,7 @@ def test_feature_extraction(dset):
 
     return ds.fillna(0)
 
+#this actually STANDARDIZES feature
 def scale_features(dset):
     field_list = ['prop_review_score', 'promotion_flag', 'srch_length_of_stay', \
         'srch_booking_window', 'srch_adults_count', 'srch_children_count', \

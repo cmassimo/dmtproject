@@ -60,7 +60,8 @@ def ndcg(group):
         opt = 5
     else:
         opt = 0
-
+    
+    #range(click_sum, 0, -1)?????
     for i in range(click_sum, 1, -1):
         opt += 1/float(i)
 

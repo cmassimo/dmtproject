@@ -14,8 +14,8 @@ def expandgrid(names, *itrs):
     return pd.DataFrame({names[i]: [x[i] for x in product] for i in range(len(names))}).values
 
 pranges = {'learning_rate': [0.05, 0.1, 0.15], \
-        'n_estimators': [200, 100, 50], \
-        'max_depth': [4, 3, 2]}
+        'n_estimators': [200, 100], \
+        'max_depth': [4, 2]}
 
 grid = expandgrid(pranges.keys(), *pranges.values())
 
@@ -68,20 +68,20 @@ for gparams in grid:
         print "predictions MSE:", mse
 
         #combining results: need to concatenate values and labels/indexes
-#        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
-#        a = array([np.append(a[i], 0) for i in range(X_test.shape[0])])
-#        keys = osn.keys().drop('label')
-#        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob', 'pos']))
-#
-#        result = pd.DataFrame(data=a, columns=keys)
-#
-#        # calculate the ordering
-#        print "Calculating the ordering based on the returned probabilities..."
-#        score = calculate_ndcg(order('booking', result))
-#
-#        print "This model scored an NDCG of:", score
+        a = array([np.append(X_test[i], probs[i]) for i in range(X_test.shape[0])])
+        a = array([np.append(a[i], 0) for i in range(X_test.shape[0])])
+        keys = osn.keys().drop('label')
+        keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob', 'pos']))
+
+        result = pd.DataFrame(data=a, columns=keys)
+
+        # calculate the ordering
+        print "Calculating the ordering based on the returned probabilities..."
+        score = calculate_ndcg(order('booking', result))
+
+        print "This model scored an NDCG of:", score
         
-        score += (1.0 - mse)
+#        score += (1.0 - mse)
 
     results.append([score/2.0, gparams])
 
@@ -96,7 +96,7 @@ for sc, par in results:
         max_score = sc
         best_params = par
 
-best_params = [0.15, 4, 200]
+# for final prediction: best_params = [0.15, 4, 200]
 
 print
 print "Selecting best params tuple:", best_params
@@ -112,8 +112,9 @@ clf.fit(X_train_clean, y_train)
 # test ndcg on another slice of the training set
 
 print "get NDCG from another slice of the training set..."
-val_set = sample_dataset(feature_extraction(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv')), osn['srch_id'].unique())
-#val_set = pd.read_csv(os.path.join('..', 'data', 'validation.csv'))
+fe = feature_extraction(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
+#val_set = sample_dataset(fe, osn['prop_id'].unique())
+val_set = pd.read_csv(os.path.join('..', 'data', 'validation.csv'))
 
 cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
 'srch_adults_count', 'srch_children_count', 'norm_star_rating',  \
@@ -126,11 +127,12 @@ print "validation predictions..."
 vset_clean = [x[:9] for x in vset]
 val_prediction = clf.predict(vset_clean)
 val_probs = clf.predict_proba(vset_clean)
+val_mse = mean_squared_error(val_set['label'].values, val_prediction)
 
 #combining results: need to concatenate values and labels/indexes
-a = array([np.append(val_set[i], val_probs[i]) for i in range(val_set.shape[0])])
+a = array([np.append(vset[i], val_probs[i]) for i in range(val_set.shape[0])])
 a = array([np.append(a[i], 0) for i in range(val_set.shape[0])])
-keys = val_set.keys().drop('label')
+keys = val_set.keys()
 keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob', 'pos']))
 
 val_result = pd.DataFrame(data=a, columns=keys)
@@ -139,7 +141,7 @@ val_result = pd.DataFrame(data=a, columns=keys)
 print "Calculating the ordering based on the returned probabilities..."
 val_score = calculate_ndcg(order('booking', val_result))
 
-print "Final NDCG for validation set:", val_score
+print "NDCG for validation set:", val_score
 
 
 # FINAL PREDICTIONS

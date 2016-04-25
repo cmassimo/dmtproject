@@ -37,13 +37,20 @@ def order_booking_only(dataset):
 def order_score(dataset):
     '''Calculates the ordering of hotels. Dataset should contain srch_id, prop_id,
     booking_prob, clicking_prop'''
-    
+
     #calculate score
     dataset['book_score'] = 5*dataset['booking_prob']*0.02791
     dataset['click_score'] = 1*dataset['clicking_prob']*0.01683
     dataset['score'] = dataset[['book_score', 'click_score']].max(axis=1)
 
-    df_sort = dataset.groupby('srch_id').apply(lambda x: x.sort(['score'], axis=0, ascending=False))
+    def sort_pos(x):
+        tmp = x.sort(['score'], axis=0, ascending=False)
+        tmp['pos'] = range(1, len(x)+1)
+        return tmp
+    
+    #sort by booking probability
+    print "-- sorting properties --"
+    df_sort = dataset.groupby('srch_id').apply(sort_pos)
     
     #file output
     df_sort[['srch_id','prop_id']].to_csv(os.path.join('..', 'data', 'results.csv'), index=False)
@@ -61,8 +68,7 @@ def ndcg(group):
     else:
         opt = 0
     
-    #range(click_sum, 0, -1)?????
-    for i in range(click_sum, 1, -1):
+    for i in range(click_sum, 0, -1):
         opt += 1/float(i)
 
     if opt > 0:

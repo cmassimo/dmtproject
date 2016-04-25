@@ -42,6 +42,8 @@ orderedfilter['booking_bool'].mean() - randomfilter['booking_bool'].mean()
 #correlations
 ds[['booking_bool', 'prop_brand_bool', 'prop_starrating', 'prop_review_score', 'prop_location_score1', 'prop_location_score2', 'prop_log_historical_price', 'price_usd', 'promotion_flag', 'srch_length_of_stay', 'srch_saturday_night_bool', 'orig_destination_distance']].corr()
 
+osn[['booking_bool', 'nlog_price', 'loc_ratio2', 'norm_star_rating']].corr()
+
 #############
 #plotting
 

@@ -7,7 +7,7 @@ from sklearn import preprocessing
 def sample_dataset(ds, exclude_srch_ids):
 
     # getting the unique values for srch_id
-    ids = ds['srch_id'].unique() - exclude_srch_ids
+    ids = ds['srch_id'].unique()
 
     cutoff = floor(ids.size*0.1)
 

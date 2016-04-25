@@ -38,7 +38,6 @@ def test_feature_extraction(dset):
 
     return ds.fillna(0)
 
-#this actually STANDARDIZES feature
 def scale_features(dset):
     field_list = ['prop_review_score', 'promotion_flag', 'srch_length_of_stay', \
         'srch_booking_window', 'srch_adults_count', 'srch_children_count', \
@@ -56,7 +55,6 @@ def scale_features(dset):
 
     return tmp
 
-#watch out with wording: 'normalize' means scale rows to unit norm!!
 def normalize_samples(dset):
     field_list = ['prop_review_score', 'promotion_flag', 'srch_length_of_stay', \
         'srch_booking_window', 'srch_adults_count', 'srch_children_count', \

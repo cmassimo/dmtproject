@@ -96,7 +96,8 @@ for sc, par in results:
         max_score = sc
         best_params = par
 
-# for final prediction: best_params = [0.15, 4, 200]
+# for final prediction: 
+best_params = [0.15, 4, 200]
 
 print
 print "Selecting best params tuple:", best_params
@@ -112,7 +113,7 @@ clf.fit(X_train_clean, y_train)
 # test ndcg on another slice of the training set
 
 print "get NDCG from another slice of the training set..."
-fe = feature_extraction(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
+#fe = feature_extraction(os.path.join('..', 'data', 'training_set_VU_DM_2014.csv'))
 #val_set = sample_dataset(fe, osn['prop_id'].unique())
 val_set = pd.read_csv(os.path.join('..', 'data', 'validation.csv'))
 
@@ -121,7 +122,8 @@ cols = ['promotion_flag', 'srch_length_of_stay', 'srch_booking_window',\
  'prop_location_score2','prop_review_score','nlog_price',\
  'loc_ratio2', 'click_bool','prop_id', 'srch_id','booking_bool','label']
 
-vset = val_set[cols].values
+val_set_sk = val_set[cols]
+vset = val_set_sk.values
 
 print "validation predictions..."
 vset_clean = [x[:9] for x in vset]
@@ -132,16 +134,18 @@ val_mse = mean_squared_error(val_set['label'].values, val_prediction)
 #combining results: need to concatenate values and labels/indexes
 a = array([np.append(vset[i], val_probs[i]) for i in range(val_set.shape[0])])
 a = array([np.append(a[i], 0) for i in range(val_set.shape[0])])
-keys = val_set.keys()
+keys = val_set_sk.drop(val_set_sk['label']).keys()
 keys = keys.append(array(['ignoring_prob', 'clicking_prob', 'booking_prob', 'pos']))
-
-val_result = pd.DataFrame(data=a, columns=keys)
 
 # calculate the ordering
 print "Calculating the ordering based on the returned probabilities..."
-val_score = calculate_ndcg(order('booking', val_result))
+val_result = pd.DataFrame(data=a, columns=keys)
+val_score_1 = calculate_ndcg(order('booking', val_result))
+print "NDCG for validation set (booking):", val_score_1
 
-print "NDCG for validation set:", val_score
+val_result = pd.DataFrame(data=a, columns=keys)
+val_score_2 = calculate_ndcg(order('score', val_result))
+print "NDCG for validation set (score):", val_score_2
 
 
 # FINAL PREDICTIONS
